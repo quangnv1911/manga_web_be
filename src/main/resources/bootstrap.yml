@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE}
+  application:
+    name: auth-service
+  cloud:
+    config:
+      uri: ${SPRING_CLOUD_CONFIG_URI}
+      username: ${CONFIG_NAME}
+      password: ${CONFIG_PASSWORD}
+      fail-fast: true
