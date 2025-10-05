@@ -32,6 +32,6 @@
     </root>
 
     <!-- Package-specific logging -->
-    <logger name="com.gigalike" level="INFO"/>
+    <logger name="com.manga" level="INFO"/>
     <logger name="org.springframework.security" level="DEBUG"/>
 </configuration>

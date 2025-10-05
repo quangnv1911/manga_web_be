@@ -1,10 +1,6 @@
 package com.manga.manga_web.exception;
 
-import com.gigalike.shared.dto.ApiResponse;
-import com.gigalike.shared.exception.BusinessException;
-import com.gigalike.shared.exception.ResourceNotFoundException;
-import com.gigalike.shared.exception.UnauthorizedException;
-import com.gigalike.shared.exception.UserNotFoundException;
+import com.manga.manga_web.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +30,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    @ExceptionHandler(com.gigalike.shared.exception.UnauthorizedException.class)
+    @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiResponse<Object>> handleUnauthorizedException(UnauthorizedException ex) {
         log.error("Unauthorized access: {}", ex.getMessage());
         ApiResponse<Object> response = ApiResponse.error(ex.getMessage(), HttpStatus.UNAUTHORIZED.value());

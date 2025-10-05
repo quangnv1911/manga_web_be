@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface MangaChapterDetailRepository extends JpaRepository<MangaChapterDetail, UUID> {
+    long countByParentChapterTitle(String parentChapterTitle);
 }

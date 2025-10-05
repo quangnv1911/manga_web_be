@@ -1,6 +1,6 @@
 package com.manga.manga_web.controller;
 
-import com.gigalike.shared.dto.ApiResponse;
+import com.manga.manga_web.dto.response.ApiResponse;
 import com.manga.manga_web.dto.request.RegisterRequest;
 import com.manga.manga_web.dto.response.AuthResponse;
 import jakarta.validation.Valid;

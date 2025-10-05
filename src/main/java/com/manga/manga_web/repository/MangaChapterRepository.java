@@ -8,4 +8,7 @@ import java.util.UUID;
 
 @Repository
 public interface MangaChapterRepository extends JpaRepository<MangaChapter, UUID> {
+    boolean existsBySourceUrl(String sourceUrl);
+
+    long countByParentMangaTitle(String parentMangaTitle);
 }

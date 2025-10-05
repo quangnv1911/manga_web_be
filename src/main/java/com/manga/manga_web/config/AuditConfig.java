@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Optional;
 
 @Configuration
-@ComponentScan(basePackages = "com.gigalike")
+@ComponentScan(basePackages = "com.manga")
 public class AuditConfig {
     @Bean
     public AuditorAware<String> auditorAware() {

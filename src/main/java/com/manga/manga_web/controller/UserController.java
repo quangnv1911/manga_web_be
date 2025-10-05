@@ -1,7 +1,7 @@
 package com.manga.manga_web.controller;
 
 import com.manga.manga_web.service.IUserService;
-import com.gigalike.shared.dto.ApiResponse;
+import com.manga.manga_web.dto.response.ApiResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

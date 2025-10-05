@@ -1,6 +1,6 @@
 package com.manga.manga_web.controller;
 
-import com.gigalike.shared.dto.ApiResponse;
+import com.manga.manga_web.dto.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

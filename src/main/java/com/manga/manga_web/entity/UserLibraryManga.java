@@ -8,6 +8,9 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.util.List;
+import java.util.UUID;
+
 @EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
@@ -19,4 +22,6 @@ import org.hibernate.annotations.SQLRestriction;
 @SQLRestriction("is_deleted = false")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserLibraryManga extends BaseEntity {
+    List<UUID> mangaIds;
+    UUID userId;
 }

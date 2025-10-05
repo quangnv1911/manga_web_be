@@ -21,11 +21,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"username", "collaborator_id"}),
-                @UniqueConstraint(columnNames = {"email", "collaborator_id"})
-        })
+@Table(name = "users")
 @Data
 @SQLDelete(sql = "UPDATE users SET is_delete = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")

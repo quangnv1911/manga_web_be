@@ -1,8 +1,8 @@
 package com.manga.manga_web.service.impl;
 
+import com.manga.manga_web.constant.RoleValue;
 import com.manga.manga_web.entity.User;
 import com.manga.manga_web.repository.UserRepository;
-import com.gigalike.shared.constant.RoleValue;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

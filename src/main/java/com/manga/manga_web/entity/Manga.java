@@ -34,6 +34,10 @@ public class Manga extends BaseEntity {
     @Column(name = "crawl_from")
     String crawlFrom;
 
+    @Column(name = "source_url", columnDefinition = "TEXT")
+    String sourceUrl;
+
+    @Transient
     List<MangaChapter> chapters;
 
 }

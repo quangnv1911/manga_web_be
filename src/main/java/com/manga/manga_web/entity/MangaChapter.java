@@ -25,4 +25,8 @@ public class MangaChapter extends BaseEntity {
 
     Integer chapterNumber;
 
+    String sourceUrl;
+
+    String parentMangaTitle;
+
 }

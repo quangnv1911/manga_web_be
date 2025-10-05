@@ -32,7 +32,7 @@ import java.util.Map;
 public class LoggingAspectConfig {
     TelegramService telegramService;
 
-    @Around("execution(* com.manga.manga_web.*(..)))")
+    @Around("execution(* com.manga.manga_web.controller..*.*(..))")
     public Object profileAllMethods(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
                 .currentRequestAttributes()).getRequest();

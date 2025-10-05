@@ -20,4 +20,7 @@ import org.hibernate.annotations.SQLRestriction;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MangaChapterDetail extends BaseEntity {
     String imageUrl;
+
+    String parentChapterTitle;
+    Integer pageIndex;
 }

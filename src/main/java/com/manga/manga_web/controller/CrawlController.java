@@ -1,6 +1,7 @@
 package com.manga.manga_web.controller;
 
-import com.gigalike.shared.dto.ApiResponse;
+import com.manga.manga_web.crawler.MangaCrawler;
+import com.manga.manga_web.dto.response.ApiResponse;
 import com.manga.manga_web.dto.request.CrawlTriggerReq;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -17,10 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CrawlController {
+    MangaCrawler mangaCrawler;
 
     @PostMapping("/manga")
-    public ResponseEntity<ApiResponse<?>> crawlData(@Valid @RequestBody CrawlTriggerReq req) {
-        var response = "This is a public endpoint. Registration logic goes here.";
-        return ResponseEntity.ok(ApiResponse.success("User registered successfully", response));
+    public ResponseEntity<ApiResponse<?>> crawlData() {
+        mangaCrawler.crawlTruyenQQ();
+        return ResponseEntity.ok(ApiResponse.success("User registered successfully", "he"));
     }
 }

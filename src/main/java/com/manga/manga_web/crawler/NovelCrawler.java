@@ -7,6 +7,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +19,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NovelCrawler {
     CrawlSourceRepository crawlSourceRepository;
-    NovelCrawler self;
+    ApplicationContext applicationContext;
+
     /**
      * Hako re
      *
@@ -29,6 +33,9 @@ public class NovelCrawler {
 
     @Async
     public void crawlAll() {
+
+        NovelCrawler self = applicationContext.getBean(NovelCrawler.class);
+
         self.crawlHako();
     }
 }

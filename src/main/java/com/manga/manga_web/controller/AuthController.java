@@ -1,10 +1,10 @@
 package com.manga.manga_web.controller;
 
+import com.manga.manga_web.dto.response.ApiResponse;
 import com.manga.manga_web.dto.response.AuthResponse;
 import com.manga.manga_web.dto.request.LoginRequest;
 import com.manga.manga_web.dto.request.RegisterRequest;
 import com.manga.manga_web.service.IAuthService;
-import com.gigalike.shared.dto.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;

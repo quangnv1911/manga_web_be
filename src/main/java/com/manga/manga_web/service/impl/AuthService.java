@@ -1,25 +1,18 @@
 package com.manga.manga_web.service.impl;
 
 import com.manga.manga_web.constant.RoleValue;
-import com.manga.manga_web.dto.request.LoginGoogleRequest;
 import com.manga.manga_web.dto.response.AuthResponse;
 import com.manga.manga_web.dto.request.LoginRequest;
 import com.manga.manga_web.dto.request.RegisterRequest;
 import com.manga.manga_web.dto.data.UserDto;
 import com.manga.manga_web.entity.RefreshToken;
 import com.manga.manga_web.entity.User;
+import com.manga.manga_web.exception.BusinessException;
+import com.manga.manga_web.exception.ResourceNotFoundException;
 import com.manga.manga_web.repository.RefreshTokenRepository;
 import com.manga.manga_web.repository.UserRepository;
 import com.manga.manga_web.service.IAuthService;
-import com.gigalike.shared.exception.BusinessException;
-import com.gigalike.shared.exception.ResourceNotFoundException;
-import com.gigalike.shared.util.JwtUtil;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
-import com.manga.manga_web.util.CommonUtil;
+import com.manga.manga_web.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +29,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,57 +114,6 @@ public class AuthService implements IAuthService {
         return generateAuthResponse(user);
     }
 
-    @Override
-    public AuthResponse loginGoogle(HttpServletRequest httpRequest, LoginGoogleRequest request) {
-
-        NetHttpTransport httpTransport = new NetHttpTransport();
-        JsonFactory jsonFactory = new GsonFactory();
-        // Verify token
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier
-                .Builder(httpTransport, jsonFactory)
-                .setAudience(Collections.singletonList(googleClientId))
-                .build();
-        try {
-            GoogleIdToken idToken = verifier.verify(request.getIdToken());
-            if (idToken == null) {
-                throw new BadCredentialsException("Invalid Google token");
-            }
-            // Extract payload from token
-            GoogleIdToken.Payload payload = idToken.getPayload();
-
-            String email = payload.getEmail();
-            String name = (String) payload.get("name");
-
-            // 3. Kiểm tra user trong DB
-            User user = userRepository.findByEmail(email)
-                    .orElseGet(() -> {
-                        log.info("User {} has been created", email);
-                        var newUser = User.builder()
-                                .username(CommonUtil.concatUserNameFromEmail(email))
-                                .email(email)
-                                .firstName(name)
-                                .role(RoleValue.USER)
-                                .enabled(true)
-                                .accountNonExpired(true)
-                                .accountNonLocked(true)
-                                .credentialsNonExpired(true)
-                                .build();
-                        return userRepository.save(newUser);
-                    });
-            if (!isIpValid(httpRequest, user)) {
-                throw new BusinessException("Invalid IP address");
-            }
-            if (!user.isEnabled()) {
-                throw new BadCredentialsException("User is disabled");
-            }
-            // Generate JWT token
-            return generateAuthResponse(user);
-        } catch (GeneralSecurityException | IOException e) {
-            log.error("Token issue: {}", e.getMessage());
-            throw new RuntimeException("Google token verification failed", e);
-        }
-
-    }
 
     @Transactional
     @Override
