@@ -1,5 +1,7 @@
 package com.manga.manga_web.crawler;
 
+import com.manga.manga_web.config.CrawlerConfig;
+import com.manga.manga_web.constant.CommonConstant;
 import com.manga.manga_web.constant.CrawlSourceValue;
 import com.manga.manga_web.entity.CrawlSource;
 import com.manga.manga_web.entity.Manga;
@@ -27,20 +29,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import static com.manga.manga_web.config.CrawlerConfig.CRAWL_DELAY;
+import static com.manga.manga_web.config.CrawlerConfig.CRAWL_TIMEOUT;
+
 @Component
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class MangaCrawler {
-    static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36";
-    static final String REFERER = "https://truyenqqgo.com/";
-    public static final String SEC_CH_UA = "\"Chromium\";v=\"140\", \"Not=A?Brand\";v=\"24\", \"Google Chrome\";v=\"140\"";
-
-    public static final String SEC_CH_UA_MOBILE = "?0";
-
-    public static final String SEC_CH_UA_PLATFORM = "\"Windows\"";
-
-    public static final String ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
     ApplicationContext applicationContext;
     CrawlSourceRepository crawlSourceRepository;
     MangaRepository mangaRepository;
@@ -57,7 +53,7 @@ public class MangaCrawler {
         CrawlSource crawlSource = crawlSourceRepository.findByCrawlSourceValue(CrawlSourceValue.TRUYENQQ);
         log.info("Start crawling manga from truyenqq: {}", crawlSource);
 
-        final String baseUrl = "https://truyenqqgo.com/truyen-moi-cap-nhat/trang-%d.html";
+        String baseUrl = crawlSource + "/truyen-moi-cap-nhat/trang-%d.html";
         int page = 1;
         int maxEmptyPages = 2;
         int emptyInRow = 0;
@@ -65,16 +61,7 @@ public class MangaCrawler {
         while (true) {
             String pageUrl = String.format(baseUrl, page);
             try {
-                Document doc = Jsoup.connect(pageUrl)
-                        .userAgent(USER_AGENT)
-                        .referrer(REFERER)
-                        .header("sec-ch-ua", SEC_CH_UA)
-                        .header("sec-ch-ua-mobile", SEC_CH_UA_MOBILE)
-                        .header("sec-ch-ua-platform", SEC_CH_UA_PLATFORM)
-                        .header("accept", ACCEPT)
-                        .ignoreContentType(true)
-                        .timeout(15000)
-                        .get();
+                Document doc = getDocument(pageUrl, crawlSource);
 
                 Elements items = doc.select("ul.list_grid.grid > li");
                 if (items == null || items.isEmpty()) {
@@ -127,8 +114,8 @@ public class MangaCrawler {
                         }
 
                         // crawl manga detail page for chapters with delay
-                        crawlMangaDetailAndChapters(manga, detailUrl);
-                        sleepQuietly(10000);
+                        crawlMangaDetailAndChapters(manga, detailUrl, crawlSource);
+                        sleepQuietly(CRAWL_DELAY);
                     } catch (Exception itemEx) {
                         log.warn("Failed to parse/save item on page {}: {}", page, itemEx.getMessage());
                     }
@@ -150,18 +137,9 @@ public class MangaCrawler {
         log.info("Finished crawling truyenqq up to page {}", page - 1);
     }
 
-    private void crawlMangaDetailAndChapters(Manga manga, String detailUrl) {
+    private void crawlMangaDetailAndChapters(Manga manga, String detailUrl, CrawlSource crawlSource) {
         try {
-            Document detailDoc = Jsoup.connect(detailUrl)
-                    .userAgent(USER_AGENT)
-                    .referrer(REFERER)
-                    .header("sec-ch-ua", SEC_CH_UA)
-                    .header("sec-ch-ua-mobile", SEC_CH_UA_MOBILE)
-                    .header("sec-ch-ua-platform", SEC_CH_UA_PLATFORM)
-                    .header("accept", ACCEPT)
-                    .ignoreContentType(true)
-                    .timeout(15000)
-                    .get();
+            Document detailDoc = getDocument(detailUrl, crawlSource);
 
             Elements chapterLinks = detailDoc.select(".list_chapter .works-chapter-item .name-chap a");
             for (Element a : chapterLinks) {
@@ -184,26 +162,17 @@ public class MangaCrawler {
                 chapter = mangaChapterRepository.save(chapter);
 
                 // fetch chapter detail for images
-                crawlChapterImages(chapter);
-                sleepQuietly(10000);
+                crawlChapterImages(chapter, crawlSource);
+                sleepQuietly(CRAWL_DELAY);
             }
         } catch (Exception e) {
             log.warn("Failed to crawl detail for manga {}: {}", manga.getTitle(), e.getMessage());
         }
     }
 
-    private void crawlChapterImages(MangaChapter chapter) {
+    private void crawlChapterImages(MangaChapter chapter, CrawlSource crawlSource) {
         try {
-            Document doc = Jsoup.connect(chapter.getSourceUrl())
-                    .userAgent(USER_AGENT)
-                    .referrer(REFERER)
-                    .header("sec-ch-ua", SEC_CH_UA)
-                    .header("sec-ch-ua-mobile", SEC_CH_UA_MOBILE)
-                    .header("sec-ch-ua-platform", SEC_CH_UA_PLATFORM)
-                    .header("accept", ACCEPT)
-                    .ignoreContentType(true)
-                    .timeout(20000)
-                    .get();
+            Document doc = getDocument(chapter.getSourceUrl(), crawlSource);
 
             Elements imgs = doc.select(".page-chapter img");
             int index = 0;
@@ -213,7 +182,7 @@ public class MangaCrawler {
                     continue;
 
                 String objectName = buildObjectName(chapter, index, url);
-                String uploaded = uploadImageToMinio(url, objectName);
+                String uploaded = uploadImageToMinio(url, objectName, crawlSource);
                 if (uploaded == null)
                     continue;
 
@@ -244,15 +213,15 @@ public class MangaCrawler {
         return String.format("manga/%s/%s/%03d%s", safeTitle, safeChap, index, ext);
     }
 
-    private String uploadImageToMinio(String sourceUrl, String objectName) {
+    private String uploadImageToMinio(String sourceUrl, String objectName, CrawlSource crawlSource) {
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.add("User-Agent", USER_AGENT);
-            headers.add("Referer", REFERER);
-            headers.add("sec-ch-ua", SEC_CH_UA);
-            headers.add("sec-ch-ua-mobile", SEC_CH_UA_MOBILE);
-            headers.add("sec-ch-ua-platform", SEC_CH_UA_PLATFORM);
-            headers.add("accept", ACCEPT);
+            headers.add("User-Agent", crawlSource.getUserAgent());
+            headers.add("Referer", crawlSource.getReferrer());
+            headers.add("sec-ch-ua", CommonConstant.SEC_CH_UA);
+            headers.add("sec-ch-ua-mobile", CommonConstant.SEC_CH_UA_MOBILE);
+            headers.add("sec-ch-ua-platform", CommonConstant.SEC_CH_UA_PLATFORM);
+            headers.add("accept", CommonConstant.ACCEPT);
             HttpEntity<Void> request = new HttpEntity<>(headers);
             ResponseEntity<byte[]> response = restTemplate.exchange(sourceUrl, HttpMethod.GET, request, byte[].class);
             byte[] bytes = response.getBody();
@@ -295,6 +264,20 @@ public class MangaCrawler {
         MangaCrawler self = applicationContext.getBean(MangaCrawler.class);
         self.crawlTruyenQQ();
         self.crawlCmanga();
+    }
+
+
+    private Document getDocument(String url, CrawlSource crawlSource) throws Exception {
+        return Jsoup.connect(url)
+                .userAgent(crawlSource.getUserAgent())
+                .referrer(crawlSource.getReferrer())
+                .header("sec-ch-ua", crawlSource.getSecCHUA())
+                .header("sec-ch-ua-mobile", crawlSource.getSecCHUAMobile())
+                .header("sec-ch-ua-platform", crawlSource.getSecCHUAPlatform())
+                .header("accept", crawlSource.getAccept())
+                .ignoreContentType(true)
+                .timeout(CRAWL_TIMEOUT)
+                .get();
     }
 
 }

@@ -19,7 +19,6 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MinioStorageService implements StorageService {
-
     final MinioClient minioClient;
 
     @Value("${minio.bucket}")
@@ -31,6 +30,7 @@ public class MinioStorageService implements StorageService {
             boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
             if (!exists) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+                log.info("Created bucket: {}", bucket);
             }
 
             minioClient.putObject(
@@ -40,6 +40,7 @@ public class MinioStorageService implements StorageService {
                             .stream(data, size, -1)
                             .contentType(contentType)
                             .build());
+            log.info("Uploaded file to MinIO: {}/{}", bucket, objectName);
             return String.format("%s/%s", bucket, objectName);
         } catch (Exception e) {
             log.warn("MinIO upload failed for {}: {}", objectName, e.getMessage());

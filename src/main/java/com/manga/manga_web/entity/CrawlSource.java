@@ -17,9 +17,30 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CrawlSource extends BaseEntity {
+    @Column(name = "domain")
     String domain;
+
+    @Column(name = "referer")
+    String referrer;
+
+    @Column(name = "user_agent")
+    String UserAgent;
+
+    @Column(name = "sec_ch_ua")
+    String secCHUA;
+
+    @Column(name = "sec_ch_ua_mobile")
+    String secCHUAMobile;
+
+    @Column(name = "sec_ch_ua_platform")
+    String secCHUAPlatform;
+
+    @Column(name = "accept")
+    String accept;
+
     @Column(name = "crawl_source_value", unique = true)
     CrawlSourceValue crawlSourceValue;
+
     @Column(name = "is_active")
     Boolean isActive;
 }
